@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 namespace CSVSharp
 {
     [System.AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = true)]
-    public sealed class ExportIgnoreAttribute : Attribute
+    public sealed class ExportOrderAttribute : Attribute
     {
-        
+        public int Order{ get; }
+        public ExportOrderAttribute(int Order)
+        {
+            this.Order = Order;
+        }
     }
 }

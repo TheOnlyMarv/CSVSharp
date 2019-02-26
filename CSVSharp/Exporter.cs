@@ -17,7 +17,18 @@ namespace CSVSharp
         public Exporter()
         {
             FormatProvider = CultureInfo.CurrentCulture;
-            OrderedProperties = typeof(T).GetProperties().OrderBy(x => x.Name).ToList();
+            var properties = 
+                typeof(T).GetProperties()
+                .Where(x => x.CustomAttributes == null || !x.CustomAttributes.Any(y => y.AttributeType == typeof(ExportIgnoreAttribute)))
+                .OrderBy(x => x.Name)
+                .ToList();
+
+            if (properties.Any(x => x.CustomAttributes.Any(y => y.AttributeType == typeof(ExportOrderAttribute))))
+            {
+                properties = properties.OrderBy(x => x.GetCustomAttribute<ExportOrderAttribute>()?.Order ?? int.MaxValue).ThenBy(x => x.Name).ToList();
+            }
+
+            OrderedProperties = properties;
         }
 
         public Exporter(IFormatProvider formatProvider) : this()
@@ -69,7 +80,7 @@ namespace CSVSharp
             {
                 if (value is bool b)
                 {
-                    stringValue = b ? "Ja" : "Nein";
+                    stringValue = b.ToString(FormatProvider);
                 }
                 else if (value is int i)
                 {
